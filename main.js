@@ -1,71 +1,59 @@
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let inputTxt = document.querySelector('#textInput');
+let play = document.querySelector('#play');
+let play2 = document.querySelector('#play2');
+let play3 = document.querySelector('#play3');
+let play4 = document.querySelector('#play4');
 
-const message = document.getElementById("message");
-const output = document.getElementById("result");
-const image1 = document.getElementById("image1");
 
-startRecognition = () => {
-  if (SpeechRecognition !== undefined) { // test if speechrecognitio is supported
-    let recognition = new SpeechRecognition();
-      recognition.lang = 'tr-TR';//'en-US'; // which language is used?
-    recognition.interimResults = false; // https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/interimResults
-    recognition.continuous = false; // https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/continuous
-   
-    recognition.onstart = () => {
-      message.innerHTML = `Starting listening, speak in the microphone please<br>Say "help me" for help`;
-      output.classList.add("hide"); // hide the output
-    };
+play.addEventListener('click', () => {sayTheWord(inputTxt.value);});
+play2.addEventListener('click', () => {sayTheWord(textData.welcomeDu());});
+play3.addEventListener('click', () => {sayTheWord(textData.dateStringDutch());});
+play4.addEventListener('click', () => { sayTheWord(textArray[3]); });
+ 
+let synthesizer =  window.speechSynthesis; // init speech synthesizer
+let magicVoice = new SpeechSynthesisUtterance(); // instance of speech to text
 
-    recognition.onspeechend = () => {
-      message.innerHTML = `I stopped listening `;
-      recognition.stop();
-    };
-
-    recognition.onresult = (result) => {
-      let transcript = result.results[0][0].transcript;
-      let confidenceTranscript= Math.floor(result.results[0][0].confidence * 100); // calc. 'confidence'
-      output.classList.remove("hide"); // show the output
-      output.innerHTML = `I'm ${confidenceTranscript}% certain you just said: <b>${transcript}</b>`;
-      actionSpeech(transcript);
-    };
-
-    recognition.start();
-  } 
-  else {  // speechrecognition is not supported
-    message.innerHTML = "sorry speech to text is not supported in this browser";
-  }
-};
-// process speech results
-actionSpeech = (speechText) => {
-  speechText = speechText.toLowerCase().trim(); // trim spaces + to lower case
-  console.log(speechText); // debug 
-  switch(speechText){ 
-    // switch evaluates using stric comparison, ===
-    case "black":
-      document.body.style.background = "#000000";
-      document.body.style.color="#FFFFFF";
-      break;
-    case  "reset":
-      document.body.style.background = "#ffe6ab";
-      document.body.style.color="#000000";
-      image1.classList.add("hide"); // hide image (if any)
-      break;
-    case "image": // let op, "fall-through"
-    case "caroline": // let op, "fall-through"
-      image1.src = "./img/caroline.jpg";
-      image1.style.width = "400px";
-      image1.classList.remove("hide") // show image
-      break;
-    case "diğer sayfa":
-      window.open("http://32831.hosts1.ma-cloud.nl/portfolio/", "_self");
-      break;
-    case "help me":
-      alert("Valid speech commands: black,  reset, next page");
-          break;
-      case "yusuf":
-          window.open("https://www.linkedin.com/in/yusuf-ozcelik-43ab9323b/");
-          break;
-    default:
-      // do nothing yet
-  }
+// text to speech
+function sayTheWord(theseWords){
+    console.log(theseWords);
+    synthesizer.cancel(); // reset de speech synthesizer
+    magicVoice.voice = synthesizer.getVoices()[0]; // language selection dutch
+    //magicVoice.voice = synthesizer.getVoices()[16]; // language selection english
+    magicVoice.pitch = 0.7; // toonhoogte
+    magicVoice.rate = 1.0; // speed
+    magicVoice.text = theseWords; // say it    
+    synthesizer.speak(magicVoice);
 }
+
+const textArray = [ 'Welkom op mijn portfolio', 'kan ik je ergens mee helpen?', 'ik ben een webdeveloper', 'Welkom op mijn portfolio'];
+
+class TextData{
+    dateStringDutch(){
+        let date = new Date();
+        let dayName = [ 'Zondag','Maandag','Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag',  'Zaterdag'];
+        let monthName = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+        let dateString = dayName[date.getDay()] + " " + date.getMonth()  + " " + monthName[date.getMonth()]  + " " + date.getHours() + " "+ " uur "+ date.getMinutes() ;
+        console.log(dateString); // debug
+        return(dateString);
+    }
+    dateStringEnglish(){
+        let date = new Date();
+        let dayName = [ 'Sunday','Monday','Tuesday', 'Wednesday', 'Thursday', 'Friday',  'Saturday'];
+        let monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        let dateString = dayName[date.getDay()] + " " + monthName[date.getMonth()] + " " + date.getMonth() + " time " + date.getHours() +" hours "+ date.getMinutes() + " minutes ";
+        console.log(dateString); // debug
+        return(dateString);
+    }
+    welcomeEn(){
+        let textString = ("Welkom op mijn portfolio,  kan ik je ergens mee helpen?");
+        return textString;
+    }
+    welcomeDu(){
+        let textString = ("Welkom ik ben Yusuf hoe kan ik jou helpen");
+        return textString;
+    }
+}
+textData = new TextData; // maak een instance van de class
+
+
+console.log(synthesizer.getVoices()); // show available languages in console
